@@ -8,5 +8,4 @@ public interface ClienteDAO {
 	public void remover(long id) throws SQLException;
 	public void atualizar(long id, Cliente d) throws SQLException;
 	public List<Cliente> pesquisarPorNome(String nome) throws SQLException;
-	public Cliente pesquisarporId(long id) throws SQLException;
 }

@@ -1,5 +1,8 @@
 package cliente;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
@@ -61,9 +64,8 @@ public class ClienteForm implements Tela {
 	public void ligacoes() {
 		Bindings.bindBidirectional(txtNome.textProperty(), control.nomeProperty());
 		Bindings.bindBidirectional(txtCpf.textProperty(), control.cpfProperty());
-		Bindings.bindBidirectional(txtNome.textProperty(), control.nomeProperty());
 		Bindings.bindBidirectional(txtTipoEnd.textProperty(), control.tipoEndProperty());
-		Bindings.bindBidirectional(txtLogrEnd.textProperty(), control.LogrEndProperty());
+		Bindings.bindBidirectional(txtLogrEnd.textProperty(), control.logrEndProperty());
 		Bindings.bindBidirectional(txtNumEnd.textProperty(), control.numEndProperty());
 		Bindings.bindBidirectional(txtCompEnd.textProperty(), control.compEndProperty());
 		Bindings.bindBidirectional(txtTelefone.textProperty(), control.telefoneProperty());
@@ -73,7 +75,13 @@ public class ClienteForm implements Tela {
 	}
 
 	public void adicionar() {
-		control.salvar();
+		try {
+			control.salvar();
+		} catch (SQLException e) {	
+			Alert a = new Alert(AlertType.ERROR, 
+     				"Erro ao salvar pela razão: " + e.getMessage(),ButtonType.OK);
+     		a.showAndWait();
+		}
 		Alert a = new Alert(AlertType.INFORMATION, "Cliente adicionado com sucesso", ButtonType.OK);
 		a.showAndWait();
 
@@ -85,18 +93,25 @@ public class ClienteForm implements Tela {
 		col1.setCellValueFactory(new PropertyValueFactory<Cliente, String>("nome"));
 		
 		TableColumn<Cliente, String> col2 = new TableColumn<>("Telefone");
-		col1.setCellValueFactory(new PropertyValueFactory<Cliente, String>("telefone"));
+		col2.setCellValueFactory(new PropertyValueFactory<Cliente, String>("telefone"));
 
-		TableColumn<Cliente, Void> col3 = new TableColumn<>("Açoes");
+		TableColumn<Cliente, Void> col3 = new TableColumn<>("Acoes");
 		Callback<TableColumn<Cliente, Void>, TableCell<Cliente, Void>> acoes = new Callback<>() {
+			
 			@Override
 			public TableCell<Cliente, Void> call(TableColumn<Cliente, Void> param) {
 				final Button btnExcluir = new Button("Excluir");
 				TableCell<Cliente, Void> cell = new TableCell<>() {
 					{
 						btnExcluir.setOnAction(event -> {
-							Cliente data = table.getItems().get(getIndex());
-							control.excluir(data);
+							Cliente c = table.getItems().get(getIndex());
+							try {
+								control.excluir(c);
+							} catch (SQLException e) {
+								Alert a = new Alert(AlertType.ERROR, 
+					     				"Erro ao excluir pela razão: " + e.getMessage(),ButtonType.OK);
+					     		a.showAndWait();
+							}
 						});
 					}
 
@@ -128,7 +143,12 @@ public class ClienteForm implements Tela {
 
 	@Override
 	public void start() {
-		control = new ClienteControl();
+		try {
+			control = new ClienteControl();
+		} catch (ClassNotFoundException | SQLException | IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		principal = new BorderPane();
 		principal.setPadding(new Insets(50));
 		GridPane painelForm = new GridPane();
@@ -154,8 +174,15 @@ public class ClienteForm implements Tela {
 			adicionar();
 		});
 
-		btnPesquisar.setOnAction((e) -> {
-			control.pesquisar();
+		btnPesquisar.setOnAction((e)->{
+			try { 
+				control.pesquisar();
+			} catch (SQLException err) { 
+				Alert a = new Alert(AlertType.ERROR, 
+     					"Erro ao pesquisar pela razão: " + err.getMessage(), 
+     					ButtonType.OK);
+     			a.showAndWait();
+			}
 		});
 
 
